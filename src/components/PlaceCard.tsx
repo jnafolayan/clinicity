@@ -63,13 +63,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ data }) => {
     >
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={10}>
+          <Grid item xs={9}>
             <Typography className={classes.title}>{data.name}</Typography>
             <Typography className={classes.vicinity}>
               <LocationIcon /> {data.vicinity}
             </Typography>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <Typography className={classes.rating}>
               <StarIcon />
               {(data.rating || 0).toFixed(1)}
