@@ -75,7 +75,13 @@ const App: React.FC = () => {
 
   const handleSearchChange = (event: React.ChangeEvent) => {
     const { value } = event.target as HTMLInputElement;
-    if (value && (!Number.isFinite(+value) || value.charAt(0) === "0")) return;
+    if (
+      value &&
+      (!Number.isFinite(+value) ||
+        value.charAt(0) === "0" ||
+        !/\d/.test(value.charAt(0)))
+    )
+      return;
 
     setSearchRadius(value);
   };
