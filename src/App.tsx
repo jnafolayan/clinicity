@@ -130,10 +130,10 @@ const App: React.FC = () => {
                 onChange={handleSearchChange}
                 InputProps={{
                   classes: searchFieldClasses,
-                  endAdornment: (
+                  startAdornment: (
                     <InputAdornment position="start">km</InputAdornment>
                   ),
-                  startAdornment: <SearchIcon />,
+                  endAdornment: <SearchIcon />,
                 }}
                 variant="outlined"
                 fullWidth
