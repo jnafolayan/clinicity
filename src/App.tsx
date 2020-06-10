@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
@@ -64,14 +64,11 @@ const getUserCoords: () => Promise<UserCoords> = () =>
 const App: React.FC = () => {
   const searchFieldClasses = useSearchFieldStyles();
   const classes = useStyles();
-  const [searchRadius, setSearchRadius] = useState<string>("");
-  const placesService = useMemo(
-    () => new google.maps.places.PlacesService(document.createElement("div")),
-    []
-  );
+  const [searchRadius, setSearchRadius] = useState("");
+  const placesService = useRef<google.maps.places.PlacesService>();
   const [results, setResults] = useState<google.maps.places.PlaceResult[]>([]);
-  const [pageLength, setPageLength] = useState<number>(DEFAULT_PAGE_LENGTH);
-  const [error, setError] = useState<string>("");
+  const [pageLength, setPageLength] = useState(DEFAULT_PAGE_LENGTH);
+  const [error, setError] = useState("");
 
   const handleSearchChange = (event: React.ChangeEvent) => {
     const { value } = event.target as HTMLInputElement;
@@ -84,11 +81,12 @@ const App: React.FC = () => {
       return;
 
     setSearchRadius(value);
+    executeSearch(value);
   };
 
-  const executeSearch = useCallback(async () => {
+  const executeSearch = async (r: string = searchRadius) => {
     const { latitude: lat, longitude: lng }: UserCoords = await getUserCoords();
-    const radius = Number(searchRadius) * 1000;
+    const radius = Number(r) * 1000;
 
     if (!radius) {
       setResults([]);
@@ -101,7 +99,7 @@ const App: React.FC = () => {
       type: "hospital",
     };
 
-    placesService.nearbySearch(request, (results, status) => {
+    placesService.current?.nearbySearch(request, (results, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         setResults(results);
       } else {
@@ -109,15 +107,17 @@ const App: React.FC = () => {
         setResults([]);
       }
     });
-  }, [placesService, searchRadius]);
+  };
 
   const seeMore = () => {
     setPageLength(pageLength + DEFAULT_PAGE_LENGTH);
   };
 
   useEffect(() => {
-    executeSearch();
-  }, [executeSearch]);
+    placesService.current = new google.maps.places.PlacesService(
+      document.createElement("div")
+    );
+  }, []);
 
   return (
     <div className={classes.root}>
