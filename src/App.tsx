@@ -34,6 +34,12 @@ const useStyles = makeStyles((theme) => ({
   resultsSection: {
     margin: theme.spacing(2, 0),
   },
+
+  error: {
+    color: grey[700],
+    textAlign: "center",
+    margin: theme.spacing(3, 2),
+  },
 }));
 
 const useSearchFieldStyles = makeStyles((theme) => ({
@@ -44,7 +50,7 @@ const useSearchFieldStyles = makeStyles((theme) => ({
 
 type UserCoords = { latitude: number; longitude: number };
 
-const DEFAULT_PAGE_LENGTH = 12;
+const DEFAULT_PAGE_LENGTH = 9;
 
 const getUserCoords: () => Promise<UserCoords> = () =>
   new Promise((resolve, reject) => {
@@ -65,10 +71,11 @@ const App: React.FC = () => {
   );
   const [results, setResults] = useState<google.maps.places.PlaceResult[]>([]);
   const [pageLength, setPageLength] = useState<number>(DEFAULT_PAGE_LENGTH);
+  const [error, setError] = useState<string>("");
 
   const handleSearchChange = (event: React.ChangeEvent) => {
     const { value } = event.target as HTMLInputElement;
-    if (value && (/\D/.test(value) || value.charAt(0) == "0")) return;
+    if (value && (/\D/.test(value) || value.charAt(0) === "0")) return;
 
     setSearchRadius(value);
   };
@@ -88,13 +95,11 @@ const App: React.FC = () => {
       type: "hospital",
     };
 
-    console.log("searching");
-
     placesService.nearbySearch(request, (results, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
-        console.log(results.slice(10));
         setResults(results);
       } else {
+        setError("Oops! I probably busted my daily quota ;)");
         setResults([]);
       }
     });
@@ -172,7 +177,9 @@ const App: React.FC = () => {
                   </Grid>
                 </Grid>
               </>
-            ) : null}
+            ) : (
+              <Typography className={classes.error}>{error}</Typography>
+            )}
           </Paper>
         </Container>
       </form>
