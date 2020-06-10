@@ -120,7 +120,7 @@ const App: React.FC = () => {
 
         <Container>
           <Grid container spacing={2} justify="center">
-            <Grid item xs={12} sm={6} md={6}>
+            <Grid item xs={12} sm={6} md={5}>
               <TextField
                 id="search"
                 label="Search radius"
