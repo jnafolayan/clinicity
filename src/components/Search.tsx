@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
+import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Button from "@material-ui/core/Button";
@@ -11,6 +12,7 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import HistoryIcon from "@material-ui/icons/History";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -28,6 +30,26 @@ const useStyles = makeStyles((theme) => ({
 
   select: {
     borderRadius: "24px",
+  },
+
+  historyLink: {
+    textDecoration: "none",
+    fontSize: "1rem",
+    fontFamily: "Open Sans",
+    marginBottom: theme.spacing(2),
+    display: "flex",
+    color: theme.palette.primary.light,
+    flexDirection: "row-reverse",
+    transition: theme.transitions.create("all 0.3s"),
+
+    "&:hover": {
+      color: grey[700],
+    },
+
+    "& p": {
+      display: "flex",
+      alignItems: "center",
+    },
   },
 }));
 
@@ -114,7 +136,7 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
     executeSearch();
   };
 
-  const executeSearch = async (r: number = searchRadius) => {
+  const executeSearch = (r: number = searchRadius) => {
     if (!searchRadius || !searchPlaceType || !searchAddress || !queryCoords) {
       onFailure("You need to fill in the input fields above!");
       return;
@@ -190,13 +212,20 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
     radius && isValidRadius(radius) && setSearchRadius(Number(radius));
     type && setSearchPlaceType(type);
 
-    executeSearch();
-  }, [location]);
+    address && radius && isValidRadius(radius) && type && executeSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   return (
     <form action="" method="post" onSubmit={handleFormSubmit}>
       <Grid container spacing={2} justify="center" className={classes.section}>
         <Grid item xs={12} sm={8} md={6}>
+          <Link to="/history" className={classes.historyLink}>
+            <Typography>
+              <HistoryIcon style={{ marginRight: 4 }} /> Search history
+            </Typography>
+          </Link>
+
           <TextField
             id="address"
             label="Reference location"

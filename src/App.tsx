@@ -28,7 +28,7 @@ const App: React.FC = () => {
 
   // state
   const db = useRef<firebase.firestore.Firestore>();
-  const [_ready, setReady] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     firebase.initializeApp({
@@ -47,10 +47,10 @@ const App: React.FC = () => {
       <Router>
         <Switch>
           <Route path="/" exact>
-            {db.current && <Home db={db.current} />}
+            {db.current && ready && <Home db={db.current} />}
           </Route>
           <Route path="/history">
-            {db.current && <SearchHistory db={db.current} />}
+            {db.current && ready && <SearchHistory db={db.current} />}
           </Route>
         </Switch>
       </Router>

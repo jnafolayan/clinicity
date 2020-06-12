@@ -8,8 +8,8 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Grid from "@material-ui/core/Grid";
 import grey from "@material-ui/core/colors/grey";
-import HospitalIcon from "@material-ui/icons/LocalHospital";
-import RadiusIcon from "@material-ui/icons/Scanner";
+import HospitalIcon from "@material-ui/icons/House";
+import RadiusIcon from "@material-ui/icons/ControlCamera";
 
 interface InputProps {
   db: firebase.firestore.Firestore;
@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
   underline: {
     display: "block",
+    textAlign: "right",
     width: 80,
     height: 4,
     background: theme.palette.primary.main,
@@ -41,12 +42,14 @@ const useStyles = makeStyles((theme) => ({
   },
 
   queryContainer: {
-    minHeight: "95px",
+    minHeight: "70px",
     boxShadow: "none",
     border: "1px solid #ccc",
     cursor: "pointer",
     "&:hover": {
       boxShadow: theme.shadows[2],
+      // borderColor: theme.palette.primary.main,
+      // borderWidth: 2,
     },
   },
 
@@ -62,13 +65,17 @@ const useStyles = makeStyles((theme) => ({
   },
 
   querySub: {
-    fontSize: "0.8rem",
+    fontSize: "0.6rem",
     color: grey[500],
     display: "flex",
     alignItems: "center",
     fontFamily: "'Open Sans', sans-serif",
     marginRight: theme.spacing(2),
     textTransform: "uppercase",
+    "& svg": {
+      marginRight: theme.spacing(0.5),
+      fontSize: "1.2rem",
+    },
   },
 
   querySubContainer: {
@@ -94,7 +101,7 @@ const SearchHistory: React.FC<InputProps> = ({ db }) => {
         });
         setResults(lst);
       });
-  }, []);
+  }, [db]);
 
   return (
     <Paper elevation={0}>
