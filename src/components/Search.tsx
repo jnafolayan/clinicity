@@ -136,8 +136,19 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
     executeSearch();
   };
 
-  const executeSearch = (r: number = searchRadius) => {
-    if (!searchRadius || !searchPlaceType || !searchAddress || !queryCoords) {
+  const executeSearch = (cache?: any) => {
+    let radius, type, address;
+    if (cache) {
+      radius = cache.radius;
+      type = cache.type;
+      address = cache.address;
+    } else {
+      radius = searchRadius;
+      type = searchPlaceType;
+      address = searchAddress;
+    }
+
+    if (!radius || !type || !address || !queryCoords) {
       onFailure("You need to fill in the input fields above!");
       return;
     }
@@ -145,9 +156,9 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
     // execute nearby search
     const { lat, lng } = queryCoords;
     const request = {
-      radius: searchRadius * 1000, // meters to km
+      radius: radius * 1000, // meters to km
       location: new google.maps.LatLng(lat, lng),
-      type: searchPlaceType,
+      type: type,
     };
 
     placesService.current?.nearbySearch(request, (results, status) => {
@@ -155,9 +166,9 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
         onSuccess({
           results,
           payload: {
-            address: searchAddress,
-            radius: searchRadius,
-            type: searchPlaceType,
+            address,
+            radius,
+            type,
           },
         });
       } else {
@@ -212,7 +223,11 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
     radius && isValidRadius(radius) && setSearchRadius(Number(radius));
     type && setSearchPlaceType(type);
 
-    address && radius && isValidRadius(radius) && type && executeSearch();
+    address &&
+      radius &&
+      isValidRadius(radius) &&
+      type &&
+      setTimeout(() => executeSearch({ address, radius, type }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
 

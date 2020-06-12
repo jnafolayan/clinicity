@@ -84,6 +84,11 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     marginTop: theme.spacing(1),
   },
+
+  error: {
+    color: grey[700],
+    margin: theme.spacing(3, 0),
+  },
 }));
 
 const SearchHistory: React.FC<InputProps> = ({ db }) => {
@@ -92,6 +97,7 @@ const SearchHistory: React.FC<InputProps> = ({ db }) => {
 
   useEffect(() => {
     db.collection("searches")
+      .where("user", "==", localStorage.id)
       .orderBy("createdAt")
       .get()
       .then((value) => {
@@ -99,7 +105,7 @@ const SearchHistory: React.FC<InputProps> = ({ db }) => {
         value.forEach((doc) => {
           lst.push({ ...doc.data(), _id: doc.id } as SearchQuery);
         });
-        setResults(lst);
+        setResults(lst.reverse());
       });
   }, [db]);
 
@@ -110,32 +116,38 @@ const SearchHistory: React.FC<InputProps> = ({ db }) => {
         <div className={classes.underline}></div>
 
         <div className={classes.resultsContainer}>
-          <Grid container spacing={2}>
-            {results.map((query) => (
-              <Grid item key={query._id} xs={12} sm={6} md={4}>
-                <Link
-                  to={`/?address=${query.address}&radius=${query.radius}&type=${query.type}`}
-                  style={{ textDecoration: "none" }}
-                >
-                  <Card className={classes.queryContainer}>
-                    <CardContent>
-                      <Typography className={classes.queryAddress}>
-                        {query.address}
-                      </Typography>
-                      <div className={classes.querySubContainer}>
-                        <Typography className={classes.querySub}>
-                          <HospitalIcon /> {query.type}
+          {results.length ? (
+            <Grid container spacing={2}>
+              {results.map((query) => (
+                <Grid item key={query._id} xs={12} sm={6} md={4}>
+                  <Link
+                    to={`/?address=${query.address}&radius=${query.radius}&type=${query.type}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                    <Card className={classes.queryContainer}>
+                      <CardContent>
+                        <Typography className={classes.queryAddress}>
+                          {query.address}
                         </Typography>
-                        <Typography className={classes.querySub}>
-                          <RadiusIcon /> {query.radius}
-                        </Typography>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </Grid>
-            ))}
-          </Grid>
+                        <div className={classes.querySubContainer}>
+                          <Typography className={classes.querySub}>
+                            <HospitalIcon /> {query.type}
+                          </Typography>
+                          <Typography className={classes.querySub}>
+                            <RadiusIcon /> {query.radius}
+                          </Typography>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Typography className={classes.error}>
+              You have no search history
+            </Typography>
+          )}
         </div>
       </Container>
     </Paper>

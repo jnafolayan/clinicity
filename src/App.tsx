@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
 
 import Home from "./pages/Home";
 import SearchHistory from "./pages/SearchHistory";
@@ -15,6 +14,8 @@ const useStyles = makeStyles((theme) => ({
   },
 
   appName: {
+    display: "block",
+    textDecoration: "none",
     fontSize: "3rem",
     fontFamily: "Poppins",
     marginBottom: theme.spacing(3),
@@ -31,6 +32,10 @@ const App: React.FC = () => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // id
+    const id = Date.now().toString(32) + Math.random().toString(16).substr(2);
+    if (!localStorage.id) localStorage.id = id;
+
     firebase.initializeApp({
       apiKey: "AIzaSyAT2LO95_fxvuP39_mku1nTyJ2ZIoz-z8Y",
       authDomain: "clinicity.firebaseapp.com",
@@ -43,8 +48,10 @@ const App: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Typography className={classes.appName}>Clinicity</Typography>
       <Router>
+        <Link to="/" className={classes.appName}>
+          Clinicity
+        </Link>
         <Switch>
           <Route path="/" exact>
             {db.current && ready && <Home db={db.current} />}

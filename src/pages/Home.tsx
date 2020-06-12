@@ -21,8 +21,11 @@ const Home: React.FC<InputProps> = ({ db }) => {
   }) => {
     setResults(results);
     // save search
-    console.log(payload);
-    db.collection("searches").add(payload);
+    db.collection("searches").add({
+      ...payload,
+      user: localStorage.id,
+      createdAt: new Date(),
+    });
   };
   const onFailure = (reason: string) => {
     // clear the results
