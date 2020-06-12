@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
     border: "1px solid #ccc",
     cursor: "pointer",
     "&:hover": {
-      boxShadow: theme.shadows[4],
+      boxShadow: theme.shadows[2],
     },
   },
   title: {
