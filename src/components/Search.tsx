@@ -137,7 +137,7 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
   };
 
   const executeSearch = (cache?: any) => {
-    let radius, type, address;
+    let radius: number, type: string, address: string;
     if (cache) {
       radius = cache.radius;
       type = cache.type;
@@ -148,8 +148,13 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
       address = searchAddress;
     }
 
-    if (!radius || !type || !address || !queryCoords) {
+    if (!radius || !type || !address) {
       onFailure("You need to fill in the input fields above!");
+      return;
+    }
+
+    if (!queryCoords) {
+      onFailure("We could not understand the address you specified.");
       return;
     }
 
