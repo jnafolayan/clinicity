@@ -3,20 +3,21 @@ import Container from "@material-ui/core/Container";
 
 import Search from "../components/Search";
 import SearchResults from "../components/SearchResults";
+import { NearbySearchPOI } from "../util";
 
 interface InputProps {
   db: firebase.firestore.Firestore;
 }
 
 const Home: React.FC<InputProps> = ({ db }) => {
-  const [results, setResults] = useState<google.maps.places.PlaceResult[]>([]);
+  const [results, setResults] = useState<NearbySearchPOI[]>([]);
   const [error, setError] = useState("");
 
   const onSuccess = ({
     results,
     payload,
   }: {
-    results: google.maps.places.PlaceResult[];
+    results: NearbySearchPOI[];
     payload: any;
   }) => {
     setResults(results);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
@@ -12,7 +12,14 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import HistoryIcon from "@material-ui/icons/History";
+import {
+  geocode,
+  GeocodeCandidate,
+  nearbySearch,
+  NearbySearchPOI,
+} from "../util";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -56,6 +63,7 @@ const useStyles = makeStyles((theme) => ({
 const useSearchFieldStyles = makeStyles((theme) => ({
   root: {
     borderRadius: "24px",
+    paddingRight: theme.spacing(2) + "px!important",
   },
 }));
 
@@ -80,10 +88,7 @@ const placesList = [
 ];
 
 interface InputProps {
-  onSuccess: (details: {
-    results: google.maps.places.PlaceResult[];
-    payload: any;
-  }) => void;
+  onSuccess: (details: { results: NearbySearchPOI[]; payload: any }) => void;
   onFailure: (reason: string) => void;
 }
 
@@ -94,24 +99,39 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
 
   // state
   const location = useLocation();
-  const [queryCoords, setQueryCoords] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
   const [searchRadius, setSearchRadius] = useState(1);
   const [searchAddress, setSearchAddress] = useState("");
   const [searchPlaceType, setSearchPlaceType] = useState("");
+  const [addressAuto, setAddressAuto] = useState<GeocodeCandidate[]>([]);
+  const [
+    addressAutoValue,
+    setAddressAutoValue,
+  ] = useState<GeocodeCandidate | null>(null);
+  const [addressAutoOpen, setAddressAutoOpen] = useState(false);
+  const addressAutoLoading = addressAutoOpen && addressAuto.length === 0;
 
-  // DOM
-  const searchAddressElement = useRef<HTMLInputElement>();
+  const handleAddressAutoSelect = (
+    event: any,
+    newValue: GeocodeCandidate | null
+  ) => {
+    setAddressAutoValue(newValue);
 
-  // services
-  const placesService = useRef<google.maps.places.PlacesService>();
-  const autocomplete = useRef<google.maps.places.Autocomplete>();
+    if (newValue) {
+      setSearchAddress(newValue.address.freeformAddress!);
+    }
+  };
 
-  const handleSearchAddressChange = (event: React.ChangeEvent) => {
+  const handleSearchAddressChange = async (event: React.ChangeEvent<any>) => {
     const { value } = event.target as HTMLInputElement;
+    // update visuals first
     setSearchAddress(value);
+
+    if (value) {
+      const options = await geocode(value);
+      setAddressAuto(options.results || []);
+    } else {
+      setAddressAuto([]);
+    }
   };
 
   const handleSearchRadiusChange = (event: React.ChangeEvent) => {
@@ -136,7 +156,7 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
     executeSearch();
   };
 
-  const executeSearch = (cache?: any) => {
+  const executeSearch = async (cache?: any) => {
     let radius: number, type: string, address: string;
     if (cache) {
       radius = cache.radius;
@@ -153,69 +173,38 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
       return;
     }
 
-    if (!queryCoords) {
-      onFailure("We could not understand the address you specified.");
+    // first geocode the address
+    let addressGeo;
+
+    if (
+      addressAutoValue &&
+      addressAutoValue.address.freeformAddress === address
+    ) {
+      addressGeo = addressAutoValue;
+    } else if (address) {
+      const g = await geocode(address);
+      if (g.results) {
+        addressGeo = g.results[0];
+      }
+    }
+
+    if (!addressGeo) {
+      onFailure(`We could not understand the address "${address}"`);
       return;
     }
 
-    // execute nearby search
-    const { lat, lng } = queryCoords;
-    const request = {
-      radius: radius * 1000, // meters to km
-      location: new google.maps.LatLng(lat, lng),
-      type: type,
-    };
+    const { lat, lon } = addressGeo.position;
+    const { results } = await nearbySearch(lat, lon, radius * 1000, type);
 
-    placesService.current?.nearbySearch(request, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        onSuccess({
-          results,
-          payload: {
-            address,
-            radius,
-            type,
-          },
-        });
-      } else {
-        onFailure("Oops! I probably busted my daily quota ;)");
-      }
+    onSuccess({
+      results,
+      payload: {
+        address,
+        radius,
+        type,
+      },
     });
   };
-
-  // initializer
-  useEffect(() => {
-    // initialize services
-    placesService.current = new google.maps.places.PlacesService(
-      document.createElement("div")
-    );
-
-    autocomplete.current = new google.maps.places.Autocomplete(
-      searchAddressElement.current as HTMLInputElement
-    );
-    autocomplete.current.setFields([
-      "address_components",
-      "formatted_address",
-      "geometry",
-      "name",
-    ]);
-    autocomplete.current.addListener("place_changed", () => {
-      if (!autocomplete.current) return;
-
-      const place = autocomplete.current.getPlace();
-
-      if (!place.geometry) {
-        setQueryCoords(null);
-        onFailure(`Could not get details for "${place.name}". Sorry!`);
-        return;
-      }
-
-      setSearchAddress(place.formatted_address as string);
-      setQueryCoords({
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
-      });
-    });
-  }, [onFailure]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -246,22 +235,37 @@ const Search: React.FC<InputProps> = ({ onSuccess, onFailure }) => {
             </Typography>
           </Link>
 
-          <TextField
+          <Autocomplete
             id="address"
-            label="Reference location"
-            type="text"
-            autoComplete="off"
-            value={searchAddress}
-            onChange={handleSearchAddressChange}
-            inputProps={{
-              ref: searchAddressElement,
+            open={addressAutoOpen}
+            onOpen={() => {
+              setAddressAutoOpen(true);
             }}
-            InputProps={{
-              classes: searchFieldClasses,
-              endAdornment: <SearchIcon />,
+            onClose={() => {
+              setAddressAutoOpen(false);
             }}
-            variant="outlined"
-            fullWidth
+            loading={addressAutoLoading}
+            value={addressAutoValue}
+            onChange={handleAddressAutoSelect}
+            inputValue={searchAddress}
+            onInputChange={handleSearchAddressChange}
+            options={addressAuto}
+            getOptionLabel={(option: any) =>
+              (option as GeocodeCandidate).address.freeformAddress
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Reference address"
+                variant="outlined"
+                InputProps={{
+                  ...params.InputProps,
+                  classes: searchFieldClasses,
+                  endAdornment: <SearchIcon />,
+                }}
+                fullWidth
+              />
+            )}
           />
         </Grid>
       </Grid>

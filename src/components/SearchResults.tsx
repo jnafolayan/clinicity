@@ -7,9 +7,10 @@ import Typography from "@material-ui/core/Typography";
 import grey from "@material-ui/core/colors/grey";
 import red from "@material-ui/core/colors/red";
 import PlaceCard from "./PlaceCard";
+import { NearbySearchPOI } from "../util";
 
 interface InputProps {
-  results: any[];
+  results: NearbySearchPOI[];
   error: string;
 }
 
