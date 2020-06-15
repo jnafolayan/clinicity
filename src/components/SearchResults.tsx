@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
@@ -53,7 +54,16 @@ const SearchResults: React.FC<InputProps> = ({ results, error }) => {
           <Grid container spacing={2}>
             {results.slice(0, pageLength).map((result) => (
               <Grid key={result.id} item xs={12} sm={6} md={4}>
-                <PlaceCard data={result} />
+                <Link
+                  to={`https://google.com/search?q=${encodeURI(
+                    result.poi.name
+                  )}`}
+                  style={{ textDecoration: "none" }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <PlaceCard data={result} />
+                </Link>
               </Grid>
             ))}
           </Grid>

@@ -4,6 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import Home from "./pages/Home";
 import SearchHistory from "./pages/SearchHistory";
+import NotFound from "./pages/404";
 
 import firebase from "firebase/app";
 import "firebase/firestore";
@@ -58,6 +59,9 @@ const App: React.FC = () => {
           </Route>
           <Route path="/history">
             {db.current && ready && <SearchHistory db={db.current} />}
+          </Route>
+          <Route path="">
+            <NotFound />
           </Route>
         </Switch>
       </Router>
