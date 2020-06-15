@@ -21,12 +21,17 @@ const Home: React.FC<InputProps> = ({ db }) => {
     payload: any;
   }) => {
     setResults(results);
-    // save search
-    db.collection("searches").add({
-      ...payload,
-      user: localStorage.id,
-      createdAt: new Date(),
-    });
+
+    if (!results.length) {
+      setError(`Could not find any ${payload.type} in the area.`);
+    } else {
+      // save search
+      db.collection("searches").add({
+        ...payload,
+        user: localStorage.id,
+        createdAt: new Date(),
+      });
+    }
   };
   const onFailure = (reason: string) => {
     // clear the results
