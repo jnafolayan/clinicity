@@ -1,14 +1,22 @@
 import React, { useEffect, useContext } from "react";
-import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Link,
+  Redirect,
+} from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 
 import HomePage from "./pages/Home";
 import HistoryPage from "./pages/History";
 import SignupPage from "./pages/Signup";
+import LoginPage from "./pages/Login";
 import NotFoundPage from "./pages/404";
 
 import UserProvider, { UserContext } from "./providers/UserProvider";
 import { auth } from "./firebase";
+import { generateUserDocument } from "./helpers/userDocument";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,15 +36,19 @@ const useStyles = makeStyles((theme) => ({
 
 const App: React.FC = () => {
   const classes = useStyles();
-  const { state, dispatch } = useContext(UserContext);
+  const {
+    state: { user },
+    dispatch,
+  } = useContext(UserContext);
 
   useEffect(() => {
     // // id
-    // const id = Date.now().toString(32) + Math.random().toString(16).substr(2);
-    // if (!localStorage.id) localStorage.id = id;
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (user) {
-        dispatch({ type: "auth", payload: user });
+        const userDoc = await generateUserDocument(user);
+        dispatch({ type: "auth", payload: userDoc });
+      } else {
+        dispatch({ type: "auth", payload: null });
       }
     });
   }, []);
@@ -49,23 +61,40 @@ const App: React.FC = () => {
             Clinicity
           </Link>
           <Switch>
-            <Route path="/" exact>
-              <HomePage />
-            </Route>
-            <Route path="/history">
-              <HistoryPage />
-            </Route>
-            <Route path="/signup">
-              <SignupPage />
-            </Route>
-            <Route path="">
-              <NotFoundPage />
-            </Route>
+            <PrivateRoute user={user} path="/" exact component={HomePage} />
+            <PrivateRoute user={user} path="/history" component={HistoryPage} />
+            <Route path="/signup" component={SignupPage} />
+            <Route path="/login" component={LoginPage} />
+            <Route path="" component={NotFoundPage} />
           </Switch>
         </Router>
       </div>
     </UserProvider>
   );
 };
+
+interface PrivateProps {
+  user: any;
+  path: string;
+  exact?: boolean;
+  component: React.ElementType;
+}
+
+const PrivateRoute: React.FC<PrivateProps> = ({
+  user,
+  path,
+  exact = false,
+  component: Component,
+  ...rest
+}) => (
+  <Route
+    path={path}
+    exact={exact}
+    {...rest}
+    render={(props) =>
+      user ? <Component {...props} /> : <Redirect to="/login" />
+    }
+  />
+);
 
 export default App;

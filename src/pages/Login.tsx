@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Signup: React.FC = () => {
+const Login: React.FC = () => {
   const classes = useStyles();
 
   const [email, setEmail] = useState("");
@@ -78,7 +78,7 @@ const Signup: React.FC = () => {
           Quickly find medical facilities in an area.
         </Typography>
         <Typography align="center" className={classes.subtitle}>
-          Sign up for an account.
+          Sign in to your account.
         </Typography>
 
         <Card className={classes.card}>
@@ -118,7 +118,7 @@ const Signup: React.FC = () => {
                     variant="contained"
                     color="primary"
                   >
-                    Sign up
+                    Sign in
                   </Button>
                 </Grid>
 
@@ -143,4 +143,4 @@ const Signup: React.FC = () => {
   );
 };
 
-export default Signup;
+export default Login;
