@@ -1,6 +1,6 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
@@ -43,7 +43,6 @@ const Login: React.FC = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
 
   const doGoogleLogin = (event: React.MouseEvent) => {
@@ -64,9 +63,10 @@ const Login: React.FC = () => {
     event.preventDefault();
 
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
+      await auth.signInWithEmailAndPassword(email, password);
+      window.location.href = "/";
     } catch (error) {
-      setError("Error signing in with email and password");
+      setError(error.message);
       console.error(error);
     }
   };
@@ -133,6 +133,12 @@ const Login: React.FC = () => {
                   >
                     or Continue with Google
                   </Button>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography align="center">
+                    Don't have an account? <Link to="/signup">Signup</Link>
+                  </Typography>
                 </Grid>
               </Grid>
             </form>

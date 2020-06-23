@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
@@ -11,7 +11,8 @@ import grey from "@material-ui/core/colors/grey";
 import HospitalIcon from "@material-ui/icons/House";
 import RadiusIcon from "@material-ui/icons/ControlCamera";
 
-import { firestore } from "../firebase";
+import { GRAPHQL_URL } from "../config";
+import { UserContext } from "../providers/UserProvider";
 
 interface SearchQuery {
   _id: string;
@@ -91,22 +92,43 @@ const useStyles = makeStyles((theme) => ({
 
 const HistoryPage: React.FC = () => {
   const classes = useStyles();
+  const {
+    state: { user },
+  } = useContext(UserContext);
   const [results, setResults] = useState<SearchQuery[]>([]);
 
   useEffect(() => {
-    firestore
-      .collection("searches")
-      .where("user", "==", localStorage.id)
-      .orderBy("createdAt")
-      .get()
-      .then((value) => {
-        const lst: SearchQuery[] = [];
-        value.forEach((doc) => {
-          lst.push({ ...doc.data(), _id: doc.id } as SearchQuery);
-        });
-        setResults(lst.reverse());
-      });
-  }, []);
+    (async () => {
+      const query = `query History($uid: String!) {
+        history(uid: $uid) {
+          _id
+          address
+          radius
+          type
+          createdAt
+        }
+      }`;
+
+      try {
+        const resp = await fetch(GRAPHQL_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            query,
+            variables: {
+              uid: user.uid,
+            },
+          }),
+        }).then((resp) => resp.json());
+        setResults(resp.data.history);
+      } catch (error) {
+        console.error(error);
+      }
+    })();
+  }, [user.uid]);
 
   return (
     <Paper elevation={0}>

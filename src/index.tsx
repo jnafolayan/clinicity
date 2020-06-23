@@ -6,10 +6,14 @@ import App from "./App";
 import theme from "./theme";
 import * as serviceWorker from "./serviceWorker";
 
+import UserProvider from "./providers/UserProvider";
+
 ReactDOM.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <App />
+      <UserProvider>
+        <App />
+      </UserProvider>
     </ThemeProvider>
   </React.StrictMode>,
   document.getElementById("root")

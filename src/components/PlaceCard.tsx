@@ -64,9 +64,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ data }) => {
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={9}>
-            <Typography className={classes.title}>{data.poi.name}</Typography>
+            <Typography className={classes.title}>{data.name}</Typography>
             <Typography className={classes.vicinity}>
-              <LocationIcon /> {data.address.freeformAddress}
+              <LocationIcon /> {data.address}
             </Typography>
           </Grid>
           <Grid item xs={3}>

@@ -67,14 +67,10 @@ export interface NearbySearchResult {
 }
 
 export interface NearbySearchPOI {
-  address: {
-    freeformAddress: string;
-  };
+  address: string;
   dist: number;
   id: string;
-  poi: {
-    name: string;
-  };
+  name: string;
 }
 
 export const nearbySearch = async (
@@ -87,5 +83,15 @@ export const nearbySearch = async (
   const poic = (await getPOICFor(place)) as POICategory; // force to be valid
   const cat = poic.id;
   const url = `https://api.tomtom.com/search/2/nearbySearch/.json?lat=${lat}&lon=${lon}&radius=${radius}&categorySet=${cat}&key=${TOMTOM.API_KEY}`;
-  return await fetch(url).then((resp) => resp.json());
+  return await fetch(url)
+    .then((resp) => resp.json())
+    .then((r) => ({
+      summary: r.summary,
+      results: r.results.map((res: any) => ({
+        address: res.address.freeformAddress,
+        dist: res.dist,
+        id: res.id,
+        name: res.poi.name,
+      })),
+    }));
 };

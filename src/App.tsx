@@ -14,7 +14,7 @@ import SignupPage from "./pages/Signup";
 import LoginPage from "./pages/Login";
 import NotFoundPage from "./pages/404";
 
-import UserProvider, { UserContext } from "./providers/UserProvider";
+import { UserContext } from "./providers/UserProvider";
 import { auth } from "./firebase";
 import { generateUserDocument } from "./helpers/userDocument";
 
@@ -51,25 +51,23 @@ const App: React.FC = () => {
         dispatch({ type: "auth", payload: null });
       }
     });
-  }, []);
+  }, [dispatch]);
 
   return (
-    <UserProvider>
-      <div className={classes.root}>
-        <Router>
-          <Link to="/" className={classes.appName}>
-            Clinicity
-          </Link>
-          <Switch>
-            <PrivateRoute user={user} path="/" exact component={HomePage} />
-            <PrivateRoute user={user} path="/history" component={HistoryPage} />
-            <Route path="/signup" component={SignupPage} />
-            <Route path="/login" component={LoginPage} />
-            <Route path="" component={NotFoundPage} />
-          </Switch>
-        </Router>
-      </div>
-    </UserProvider>
+    <div className={classes.root}>
+      <Router>
+        <Link to="/" className={classes.appName}>
+          Clinicity
+        </Link>
+        <Switch>
+          <PrivateRoute user={user} path="/" exact component={HomePage} />
+          <PrivateRoute user={user} path="/history" component={HistoryPage} />
+          <PublicRoute user={user} path="/signup" component={SignupPage} />
+          <PublicRoute user={user} path="/login" component={LoginPage} />
+          <Route path="" component={NotFoundPage} />
+        </Switch>
+      </Router>
+    </div>
   );
 };
 
@@ -86,15 +84,36 @@ const PrivateRoute: React.FC<PrivateProps> = ({
   exact = false,
   component: Component,
   ...rest
-}) => (
-  <Route
-    path={path}
-    exact={exact}
-    {...rest}
-    render={(props) =>
-      user ? <Component {...props} /> : <Redirect to="/login" />
-    }
-  />
-);
+}) => {
+  return (
+    <Route
+      path={path}
+      exact={exact}
+      {...rest}
+      render={(props) =>
+        user ? <Component {...props} /> : <Redirect to="/login" />
+      }
+    />
+  );
+};
+
+const PublicRoute: React.FC<PrivateProps> = ({
+  user,
+  path,
+  exact = false,
+  component: Component,
+  ...rest
+}) => {
+  return (
+    <Route
+      path={path}
+      exact={exact}
+      {...rest}
+      render={(props) =>
+        !user ? <Component {...props} /> : <Redirect to="/" />
+      }
+    />
+  );
+};
 
 export default App;

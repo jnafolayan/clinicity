@@ -55,9 +55,7 @@ const SearchResults: React.FC<InputProps> = ({ results, error }) => {
             {results.slice(0, pageLength).map((result) => (
               <Grid key={result.id} item xs={12} sm={6} md={4}>
                 <Link
-                  to={`https://google.com/search?q=${encodeURI(
-                    result.poi.name
-                  )}`}
+                  to={`https://google.com/search?q=${encodeURI(result.name)}`}
                   style={{ textDecoration: "none" }}
                   target="_blank"
                   rel="noopener noreferrer"
