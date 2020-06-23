@@ -11,9 +11,7 @@ import grey from "@material-ui/core/colors/grey";
 import HospitalIcon from "@material-ui/icons/House";
 import RadiusIcon from "@material-ui/icons/ControlCamera";
 
-interface InputProps {
-  db: firebase.firestore.Firestore;
-}
+import { firestore } from "../firebase";
 
 interface SearchQuery {
   _id: string;
@@ -91,12 +89,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const SearchHistory: React.FC<InputProps> = ({ db }) => {
+const SearchHistory: React.FC = () => {
   const classes = useStyles();
   const [results, setResults] = useState<SearchQuery[]>([]);
 
   useEffect(() => {
-    db.collection("searches")
+    firestore
+      .collection("searches")
       .where("user", "==", localStorage.id)
       .orderBy("createdAt")
       .get()
@@ -107,7 +106,7 @@ const SearchHistory: React.FC<InputProps> = ({ db }) => {
         });
         setResults(lst.reverse());
       });
-  }, [db]);
+  }, []);
 
   return (
     <Paper elevation={0}>

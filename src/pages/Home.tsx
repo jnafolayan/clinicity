@@ -4,12 +4,9 @@ import Container from "@material-ui/core/Container";
 import Search from "../components/Search";
 import SearchResults from "../components/SearchResults";
 import { NearbySearchPOI } from "../util";
+import { firestore } from "../firebase";
 
-interface InputProps {
-  db: firebase.firestore.Firestore;
-}
-
-const Home: React.FC<InputProps> = ({ db }) => {
+const Home: React.FC = () => {
   const [results, setResults] = useState<NearbySearchPOI[]>([]);
   const [error, setError] = useState("");
 
@@ -26,7 +23,7 @@ const Home: React.FC<InputProps> = ({ db }) => {
       setError(`Could not find any ${payload.type} in the area.`);
     } else {
       // save search
-      db.collection("searches").add({
+      firestore.collection("searches").add({
         ...payload,
         user: localStorage.id,
         createdAt: new Date(),
