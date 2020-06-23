@@ -6,7 +6,7 @@ import SearchResults from "../components/SearchResults";
 import { NearbySearchPOI } from "../util";
 import { firestore } from "../firebase";
 
-const Home: React.FC = () => {
+const HomePage: React.FC = () => {
   const [results, setResults] = useState<NearbySearchPOI[]>([]);
   const [error, setError] = useState("");
 
@@ -44,4 +44,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default HomePage;

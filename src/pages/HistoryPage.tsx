@@ -89,7 +89,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const SearchHistory: React.FC = () => {
+const HistoryPage: React.FC = () => {
   const classes = useStyles();
   const [results, setResults] = useState<SearchQuery[]>([]);
 
@@ -153,4 +153,4 @@ const SearchHistory: React.FC = () => {
   );
 };
 
-export default SearchHistory;
+export default HistoryPage;
